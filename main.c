@@ -1,3 +1,4 @@
+
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
 #define _GNU_SOURCE
@@ -14,8 +15,8 @@
 #include <sys/types.h>
 #include <time.h>
 
-#define KILO_VERSION "0.0.2"
-#define KILO_TAB_STOP 8
+#define BLUE_VERSION "0.0.2"
+#define BLUE_TAB_STOP 8
 #define CTRL_KEY(k) ((k) & 0x1f) // char bitwise and'ed with hex reprentation of '31'
 
 enum editorKey 
@@ -240,7 +241,7 @@ int editorRowCxToRx(erow *row, int cx)
 	{
 		if(row ->chars[j] == '\t')
 		{
-			rx += (KILO_TAB_STOP - 1) - (rx % KILO_TAB_STOP);
+			rx += (BLUE_TAB_STOP - 1) - (rx % BLUE_TAB_STOP);
 		}
 		rx++;
 	}
@@ -258,14 +259,14 @@ void editorUpdateRow(erow *row)
 		}
 	}
 	free(row ->render);
-	row->render = malloc(row->size + tabs*(KILO_TAB_STOP-1) + 1);
+	row->render = malloc(row->size + tabs*(BLUE_TAB_STOP-1) + 1);
 	int idx = 0;
 	for(j = 0; j < row->size; j++)
 	{
 		if(row->chars[j] == '\t')
 		{
 			row->render[idx++] = ' ';
-			while(idx % KILO_TAB_STOP != 0)
+			while(idx % BLUE_TAB_STOP != 0)
 			{
 				row->render[idx++] = ' ';
 			}
@@ -443,7 +444,7 @@ void editorDrawRows(struct abuf *ab)
 			{
 				char welcome [80];
 				int welcomelen = snprintf(welcome, sizeof(welcome),
-				"Kilo editor -- version %s", KILO_VERSION);
+				"BLUE editor -- version %s", BLUE_VERSION);
 				if (welcomelen > E.screencols)
 				{
 					welcomelen = E.screencols;
