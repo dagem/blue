@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <string.h>
@@ -18,6 +19,8 @@
 #define BLUE_VERSION "0.0.2"
 #define BLUE_TAB_STOP 8
 #define CTRL_KEY(k) ((k) & 0x1f) // char bitwise and'ed with hex reprentation of '31'
+
+void editorSetStatusMessage(const char *fmt, ...);
 
 enum editorKey 
 {
@@ -29,7 +32,9 @@ enum editorKey
 	HOME_KEY,
 	END_KEY,
 	PAGE_UP,
-	PAGE_DOWN
+	PAGE_DOWN,
+	BACKSPACE = 127,
+	ENTER
 };
 typedef struct erow
 {
@@ -48,6 +53,7 @@ typedef struct editorConfig
 	int screencols;
 	int numrows;
 	erow *row;
+	int dirty;
 	char *filename;
 	char statusmsg[80];
 	time_t statusmsg_time;
@@ -295,6 +301,27 @@ void editorAppendRow(char *s, size_t len)
 	
 	E.numrows++;
 }
+void editorRowInsertChar(erow *row, int at, int c)
+{
+	if(at < 0 || at > row->size)
+	{
+		at = row->size;
+	}
+	row ->chars = realloc(row->chars, row->size + 2);
+	memmove(&row->chars[at+1], &row->chars[at], row->size - at + 1);
+	row->size++;
+	row->chars[at] = c;
+	editorUpdateRow(row);
+}
+void editorInsertChar(int c)
+{
+	if (E.cy == E.numrows)
+	{
+		editorAppendRow("", 0);
+	}
+	editorRowInsertChar(&E.row[E.cy], E.cx, c);
+	E.cx++;
+}
 typedef struct abuf
 {
 	char *b;
@@ -358,12 +385,65 @@ void editorMoveCursor(int key)
 		E.cx = rowlen;
 	}
 }
+
+char *editorRowsToString(int *buffer_len)
+{
+	int total_len = 0;
+	int j = 0;
+	for(j = 0; j < E.numrows; j++)
+	{
+		total_len += E.row[j].size + 1;
+	}
+	*buffer_len = total_len;
+
+	char *buffer = malloc(total_len);
+	char *pointer = buffer;
+	for(j = 0; j < E.numrows; j++)
+	{
+		memcpy(pointer, E.row[j].chars, E.row[j].size);
+		pointer += E.row[j].size;
+		*pointer = '\n';
+		pointer++;
+	}
+	return buffer;
+}
+void editorSave()
+{
+	if(E.filename == NULL)
+	{
+		return;
+	}
+	int length;
+	char *buf = editorRowsToString(&length);
+
+	int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+	if (fd != -1)
+	{
+		if(ftruncate(fd, length) != -1)
+		{
+			if(write(fd, buf, length) == length)
+			{
+				close(fd);
+				free(buf);
+				editorSetStatusMessage("File: '%s' was sucessfuly saved, %d bytes written to disk", E.filename, length);
+				return;
+			}
+		}
+		close(fd);
+	}
+	free(buf);
+	editorSetStatusMessage("Save failed! I/O error: %s", strerror(errno));
+	
+}
 void editorProcessKeypress()
 {
 	int c = editorReadKey();
 
 	switch(c)
 	{
+		case '\r':
+			//do stuff
+			break;
 		case CTRL_KEY('q'):
 			write(STDIN_FILENO, "\x1b[2J", 4);
 			write(STDIN_FILENO, "\x1b[H", 3);
@@ -377,6 +457,11 @@ void editorProcessKeypress()
 			{
 				E.cx = E.row[E.cy].size;
 			}
+			break;
+		case BACKSPACE:
+		case CTRL_KEY('h'):
+		case DEL_KEY:
+			//do
 			break;
 		case PAGE_UP:
 		case PAGE_DOWN:
@@ -405,6 +490,15 @@ void editorProcessKeypress()
 		case ARROW_LEFT:
 		case ARROW_RIGHT:
 			editorMoveCursor(c);
+			break;
+		case CTRL_KEY('l'):
+		case '\x1b':
+			break;
+		case CTRL_KEY('s'):
+			editorSave();
+			break;
+		default: 
+			editorInsertChar(c);
 			break;
 	}
 }
@@ -589,6 +683,7 @@ void initEditor()
 	E.rowoff = 0;
 	E.coloff = 0;
 	E.numrows = 0;
+	E.dirty = 0;
 	E.row = NULL;
 	E.filename = NULL;
 	E.statusmsg[0] = '\0';
@@ -607,27 +702,9 @@ int main(int argc, char *argv[])
 	{
 		editorOpen(argv[1]);
 	}
-	editorSetStatusMessage("HELP: CTRL-Q to quit");
+	editorSetStatusMessage("HELP: CTRL-S to save, CTRL-Q to quit");
 	while(1)
 	{
-		// char c = '\0';
-		// if(read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN)
-		// {
-		// 	die("read");
-		// }
-		// if(iscntrl(c))
-		// {
-		// 	printf("%d\r\n", c);
-		// }
-	
-		// else
-		// {
-		// printf("%d ('%c')\r\n", c, c);
-		// }
-		// if(c == CTRL_KEY('q'))
-		// {
-		// 	break;
-		// }
 		editorRefreshScreen();
 		editorProcessKeypress();
 	}
