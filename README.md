@@ -7,7 +7,7 @@ LINUX
 C Compiler
 ```
 ## Compilation:
-``` gcc main.c -o blue ```
+``` make ```
 
 ## Execution:
 ```
