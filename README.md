@@ -5,8 +5,9 @@ A basic text editor/viewer written in C
 ```
 LINUX
 C Compiler
-
+```
 ## Execution:
+
 ```
 ./blue
 ./blue (filename)
