@@ -1,4 +1,4 @@
-# Blue:
+# Blue
 A basic text editor/viewer written in C
 
 ## Dependencies:
