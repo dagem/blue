@@ -5,9 +5,6 @@ A basic text editor/viewer written in C
 ```
 LINUX
 C Compiler
-```
-## Compilation:
-``` make ```
 
 ## Execution:
 ```
