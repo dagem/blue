@@ -1,43 +1,4 @@
-#include "blue-support.h"
-void editorSetStatusMessage(const char *fmt, ...);
-
-enum editorKey 
-{
-	ARROW_LEFT = 1000,
-	ARROW_RIGHT,
-	ARROW_UP,
-	ARROW_DOWN,
-	DEL_KEY,
-	HOME_KEY,
-	END_KEY,
-	PAGE_UP,
-	PAGE_DOWN,
-	BACKSPACE = 127,
-	ENTER
-};
-typedef struct erow
-{
-	int size;
-	int rsize;
-	char *chars;
-	char *render;
-} erow;
-typedef struct editorConfig
-{
-	int cx, cy;
-	int rx;
-	int rowoff;
-	int coloff;
-	int screenrows; 
-	int screencols;
-	int numrows;
-	erow *row;
-	int dirty;
-	char *filename;
-	char statusmsg[80];
-	time_t statusmsg_time;
-	struct termios orig_termios;
-}editorConfig;
+#include "editor.h"
 
 editorConfig E;
 
@@ -364,12 +325,7 @@ void editorRowAppendString(erow *row, char *s, size_t len)
 	editorUpdateRow(row);
 	E.dirty++;
 }
-typedef struct abuf
-{
-	char *b;
-	int len;
-}abuf;
-#define ABUF_INIT {NULL, 0}
+
 void abAppend(struct abuf *ab, const char *s, int len)
 {
 	char *new = realloc(ab->b, ab->len + len);

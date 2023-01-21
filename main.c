@@ -1,4 +1,4 @@
-#include "blue-support.h"
+#include "editor.h"
 int main(int argc, char *argv[])
 {
 	enableRawMode();

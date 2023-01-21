@@ -19,4 +19,4 @@
 #define BLUE_TAB_STOP 8
 #define BLUE_QUIT_TIMES 3
 #define CTRL_KEY(k) ((k) & 0x1F) //  Ctrl(k) = 0B, k & 0x1f = b
-
+#define ABUF_INIT {NULL, 0}
