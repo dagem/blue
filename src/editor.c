@@ -1,6 +1,6 @@
 #include "editor.h"
 
-editorConfig E;
+static editorConfig E;
 
 void die(const char*s)
 {
@@ -403,8 +403,45 @@ void editorMoveCursor(int key)
 		E.cx = rowlen;
 	}
 }
+char* editorPrompt(char *prompt)
+{
+	size_t bufsize = 128;
+	char *buf = malloc(bufsize);
 
-char *editorRowsToString(int *buffer_len)
+	size_t buflen = 0;
+	buf[0] = '\0';
+
+	while(1)
+	{
+		editorSetStatusMessage(prompt, buf);
+		editorRefreshScreen();
+
+		int c = editorReadKey();
+		if (c == '\x1b')
+		{
+			editorSetStatusMessage("");
+			free(buf);
+			return NULL;
+		}
+		else if(c == '\r')
+		{
+			editorSetStatusMessage("");
+			return buf;
+		}
+		else if (!iscntrl(c) && c < 128)
+		{
+			if(buflen == bufsize - 1)
+			{
+				bufsize *= 2;
+				buf = realloc(buf, bufsize);
+			}
+			buf[buflen++] = c;
+			buf[buflen] = '\0';
+		}
+		
+	}
+}
+char* editorRowsToString(int *buffer_len)
 {
 	int total_len = 0;
 	int j = 0;
@@ -429,8 +466,14 @@ void editorSave()
 {
 	if(E.filename == NULL)
 	{
-		return;
+		E.filename = editorPrompt("Save as: %s (ESC to cancel)");
+		if(E.filename == NULL)
+		{
+			editorSetStatusMessage("Save aborted");
+			return;
+		}
 	}
+	
 	int length;
 	char *buf = editorRowsToString(&length);
 
@@ -457,26 +500,30 @@ void editorProcessKeypress()
 {
 	int c = editorReadKey();
 	static int quit_times = BLUE_QUIT_TIMES;
+	char* str = malloc(sizeof(char) * 255);
 
 	switch(c)
 	{
 		case '\r':
-			if(E.cx == 0)
-			{
-				editorInsertNewline();
-			}
-			else
-			{
-				editorInsertRow(E.cx, "", E.row->size - E.cx);
-				editorInsertNewline();
-			}
+			editorInsertNewline();
 			break;
 		case CTRL_KEY('q'):
+			
 			if((E.dirty && quit_times) > 0)
 			{
-				editorSetStatusMessage("WARNING!! %s has unsaved changes. Press Ctrl-Q %d more times to quit.", E.filename, quit_times);
+				
+				if(E.filename == NULL)
+				{
+					str  = "unnamed file\0";
+				}
+				else
+				{
+					strcpy(str, E.filename);
+				}
+				editorSetStatusMessage("WARNING!! %s has unsaved changes. Press Ctrl-Q %d more times to quit", str, quit_times);
 				quit_times--;
 				return;
+				
 			}
 			write(STDOUT_FILENO, "\x1b[2J", 4);
      		write(STDOUT_FILENO, "\x1b[H", 3);
@@ -539,6 +586,7 @@ void editorProcessKeypress()
 			break;
 	}
 	quit_times = BLUE_QUIT_TIMES;
+	free(str);
 }
 void editorScroll()
 {
