@@ -546,8 +546,7 @@ int editorRowRxToCx(erow *row, int rx)
 void editorProcessKeypress()
 {
 	int c = editorReadKey();
-	static int quit_times = BLUE_QUIT_TIMES;
-	char* str = malloc(sizeof(char) * 255);
+	char* truth = malloc(sizeof(char) * 255);
 
 	switch(c)
 	{
@@ -556,25 +555,21 @@ void editorProcessKeypress()
 			break;
 		case CTRL_KEY('q'):
 			
-			if((E.dirty && quit_times) > 0)
+			if((E.dirty))
 			{
 				
-				if(E.filename == NULL)
+				truth = editorPrompt("WARNING!! file has unsaved changes. Press 'y' + enter to quit");
+				if(truth[0] == 'y' || truth[0] == 'Y')
 				{
-					str  = "unnamed file\0";
+					write(STDOUT_FILENO, "\x1b[2J", 4);
+     				write(STDOUT_FILENO, "\x1b[H", 3);
+					exit(0);
 				}
-				else
-				{
-					strcpy(str, E.filename);
-				}
-				editorSetStatusMessage("WARNING!! %s has unsaved changes. Press Ctrl-Q %d more times to quit", str, quit_times);
-				quit_times--;
 				return;
-				
 			}
 			write(STDOUT_FILENO, "\x1b[2J", 4);
      		write(STDOUT_FILENO, "\x1b[H", 3);
-			exit(0);
+			exit(0);	
 		break;
 		case HOME_KEY:
 			E.cx = 0;
@@ -635,8 +630,6 @@ void editorProcessKeypress()
 			editorInsertChar(c);
 			break;
 	}
-	quit_times = BLUE_QUIT_TIMES;
-	free(str);
 }
 void editorScroll()
 {
