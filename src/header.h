@@ -1,3 +1,5 @@
+#ifndef __BLUE_HEADER_H__
+#define __BLUE_HEADER_H__
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
 #define _GNU_SOURCE
@@ -20,3 +22,5 @@
 #define BLUE_QUIT_TIMES 1
 #define CTRL_KEY(k) ((k) & 0x1F) //  Ctrl(k) = 0B, k & 0x1f = b
 #define ABUF_INIT {NULL, 0}
+
+#endif /*__BLUE_HEADER_H__*/

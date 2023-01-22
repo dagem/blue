@@ -1,3 +1,5 @@
+#ifndef __BLUE_EDITOR_H__
+#define __BLUE_EDITOR_H__
 #include "header.h"
 
 enum editorKey 
@@ -20,6 +22,7 @@ typedef struct erow
 	int rsize;
 	char *chars;
 	char *render;
+	unsigned char *hl;
 } erow;
 typedef struct editorConfig
 {
@@ -77,3 +80,4 @@ char *editorPrompt(char *prompt, void(*callback)(char*, int));
 void editorFindCallback(char *query, int key);
 void editorFind();
 void initEditor();
+#endif /*__BLUE_EDITOR_H__*/
