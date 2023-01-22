@@ -1,6 +1,8 @@
 #ifndef __BLUE_EDITOR_H__
 #define __BLUE_EDITOR_H__
 #include "header.h"
+#define HL_HIGHLIGHT_NUMBERS (1<<0)
+#define HLDB_ENTRIES (sizeof(HLDB)/sizeof(HLDB[0]))
 
 enum editorKey 
 {
@@ -24,6 +26,7 @@ typedef struct erow
 	char *render;
 	unsigned char *hl;
 } erow;
+
 typedef struct editorConfig
 {
 	int cx, cy;
@@ -37,7 +40,9 @@ typedef struct editorConfig
 	int dirty;
 	char *filename;
 	char statusmsg[80];
+	struct editorSyntax *syntax;
 	time_t statusmsg_time;
+
 	struct termios orig_termios;
 }editorConfig;
 typedef struct abuf
@@ -45,6 +50,7 @@ typedef struct abuf
 	char *b;
 	int len;
 }abuf;
+
 
 void die(const char*s);
 void disableRawMode();
