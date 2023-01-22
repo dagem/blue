@@ -225,11 +225,14 @@ void editorUpdateRow(erow *row)
 	row->render[idx] = '\0';
 	row->rsize = idx;
 }
-void editorAppendRow(char *s, size_t len)
+void editorInsertRow(int at, char *s, size_t len)
 {
+	if(at < 0 || at > E.numrows)
+	{
+		return;
+	}
 	E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
-	
-	int at = E.numrows;
+	memmove(&E.row[at + 1], &E.row[at], sizeof(erow) * (E.numrows - at));	
 	E.row[at].size = len;
 	E.row[at].chars = malloc(len + 1);
 	memcpy(E.row[at].chars, s, len);
@@ -271,7 +274,7 @@ void editorInsertChar(int c)
 {
 	if (E.cy == E.numrows)
 	{
-		editorAppendRow("", 0);
+		editorInsertRow(E.numrows,"", 0);
 	}
 	editorRowInsertChar(&E.row[E.cy], E.cx, c);
 	E.cx++;
@@ -320,12 +323,29 @@ void editorRowAppendString(erow *row, char *s, size_t len)
 {
 	row->chars = realloc(row->chars, row->size + len + 1);
 	memcpy(&row ->chars[row->size], s, len);
-	row->size +=1;
+	row->size +=len;
 	row->chars[row->size] = '\0';
 	editorUpdateRow(row);
 	E.dirty++;
 }
-
+void editorInsertNewline()
+{
+	if(E.cx == 0)
+	{
+		editorInsertRow(E.cy, "", 0);
+	}
+	else
+	{
+		erow *row = &E.row[E.cy];
+		editorInsertRow(E.cy + 1, &row->chars[E.cx], row->size - E.cx);
+		row = &E.row[E.cy];
+		row->size = E.cx;
+		row->chars[row->size] = '\0';
+		editorUpdateRow(row);
+	}
+	E.cy++;
+	E.cx = 0;
+}
 void abAppend(struct abuf *ab, const char *s, int len)
 {
 	char *new = realloc(ab->b, ab->len + len);
@@ -441,12 +461,20 @@ void editorProcessKeypress()
 	switch(c)
 	{
 		case '\r':
-			//do stuff
+			if(E.cx == 0)
+			{
+				editorInsertNewline();
+			}
+			else
+			{
+				editorInsertRow(E.cx, "", E.row->size - E.cx);
+				editorInsertNewline();
+			}
 			break;
 		case CTRL_KEY('q'):
 			if((E.dirty && quit_times) > 0)
 			{
-				editorSetStatusMessage("WARNING!! FIle has unsaved changes. Press Ctrl-Q %d more times to quit.", quit_times);
+				editorSetStatusMessage("WARNING!! %s has unsaved changes. Press Ctrl-Q %d more times to quit.", E.filename, quit_times);
 				quit_times--;
 				return;
 			}
@@ -673,7 +701,7 @@ void editorOpen(char *filename)
 		{
 			linelen--;
 		}
-		editorAppendRow(line, linelen);
+		editorInsertRow(E.numrows,line, linelen);
 	}
 	free(line);
 	fclose(fp);
