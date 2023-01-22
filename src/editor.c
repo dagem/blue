@@ -555,20 +555,18 @@ void editorProcessKeypress()
 			break;
 		case CTRL_KEY('q'):
 			
-			if((E.dirty))
+			if(E.dirty)
 			{
 				
 				truth = editorPrompt("WARNING!! file has unsaved changes. Press 'y' + enter to quit");
 				if(truth[0] == 'y' || truth[0] == 'Y')
 				{
-					write(STDOUT_FILENO, "\x1b[2J", 4);
-     				write(STDOUT_FILENO, "\x1b[H", 3);
+					write(STDOUT_FILENO, "\x1b[2J\x1b[H", 8);
 					exit(0);
 				}
 				return;
 			}
-			write(STDOUT_FILENO, "\x1b[2J", 4);
-     		write(STDOUT_FILENO, "\x1b[H", 3);
+     		write(STDOUT_FILENO, "\x1b[2J\x1b[3J", 8);
 			exit(0);	
 		break;
 		case HOME_KEY:
