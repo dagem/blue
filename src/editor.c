@@ -402,7 +402,7 @@ void editorMoveCursor(int key)
 		E.cx = rowlen;
 	}
 }
-char* editorPrompt(char *prompt)
+char *editorPrompt(char *prompt, void(*callback)(char*, int))
 {
 	size_t bufsize = 128;
 	char *buf = malloc(bufsize);
@@ -426,12 +426,23 @@ char* editorPrompt(char *prompt)
 		else if (c == '\x1b')
 		{
 			editorSetStatusMessage("");
+			if(callback)
+			{
+				callback(buf, c);
+			}
 			free(buf);
 			return NULL;
 		}
 		else if(c == '\r')
 		{
-			editorSetStatusMessage("");
+			if(buflen != 0)
+			{
+				editorSetStatusMessage("");
+			}
+			if(callback)
+			{
+				callback(buf, c);
+			}
 			return buf;
 		}
 		else if (!iscntrl(c) && c < 128)
@@ -444,7 +455,10 @@ char* editorPrompt(char *prompt)
 			buf[buflen++] = c;
 			buf[buflen] = '\0';
 		}
-		
+		if(callback)
+		{
+			callback(buf, c);
+		}
 	}
 }
 char* editorRowsToString(int *buffer_len)
@@ -472,7 +486,7 @@ void editorSave()
 {
 	if(E.filename == NULL)
 	{
-		E.filename = editorPrompt("Save as: %s (ESC to cancel)");
+		E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
 		if(E.filename == NULL)
 		{
 			editorSetStatusMessage("Save aborted");
@@ -504,8 +518,26 @@ void editorSave()
 }
 void editorFind()
 {
-	char *query = editorPrompt("Search: %s (ESC to cancel)");
-	if(query == NULL)
+	int saved_cx = E.cx;
+	int saved_cy = E.cy;
+	int saved_sx = E.rowoff;
+	int saved_sy = E.coloff;
+	char *query = editorPrompt("Search: %s (ESC to cancel)", editorFindCallback);
+	if(query)
+	{
+		free(query);
+	}	
+	else
+	{
+		E.cx = saved_cx;
+		E.cy = saved_cy;
+		E.rowoff = saved_sx;
+		E.coloff = saved_sy;
+	}
+}
+void editorFindCallback(char *query, int key)
+{
+	if(key == '\r' || key == '\x1b')
 	{
 		return;
 	}
@@ -522,7 +554,6 @@ void editorFind()
 			break;
 		}
 	}
-	free(query);
 }
 int editorRowRxToCx(erow *row, int rx)
 {
@@ -562,17 +593,20 @@ void editorProcessKeypress()
      		write(STDOUT_FILENO, "\x1b[2J\x1b[H", 8);
 			exit(0);	
 			break;
-		case CTRL_KEY('D'):
+		
 		case HOME_KEY:
 			E.cx = 0;
 			break;
+
 		case END_KEY:
 			if(E.cy < E.numrows)
 			{
 				E.cx = E.row[E.cy].size;
 			}
 			break;
+
 		case BACKSPACE:
+		case CTRL_KEY('h'):
 		case DEL_KEY:
 			if(c == DEL_KEY)
 			{
@@ -580,6 +614,7 @@ void editorProcessKeypress()
 			}
 			editorDelChar();
 			break;
+
 		case PAGE_UP:
 		case PAGE_DOWN:
 			{
@@ -602,22 +637,26 @@ void editorProcessKeypress()
 				}
 			}
 			break;
+			
 		case ARROW_UP:
 		case ARROW_DOWN:
 		case ARROW_LEFT:
 		case ARROW_RIGHT:
 			editorMoveCursor(c);
 			break;
+
 		case CTRL_KEY('l'):
 		case '\x1b':
 			break;
+
 		case CTRL_KEY('s'):
 			editorSave();
 			break;
+
 		case CTRL_KEY('\\'):
 			editorFind();
 			break;
-	
+
 		default: 
 			editorInsertChar(c);
 			break;
@@ -799,6 +838,7 @@ void editorSetStatusMessage(const char *fmt, ...)
 	va_end(ap);
 	E.statusmsg_time = time(NULL);
 }
+
 void initEditor()
 {
 	E.cx = 0;

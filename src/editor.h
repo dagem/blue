@@ -73,4 +73,7 @@ void editorDrawMessageBar(struct abuf *ab);
 void editorRefreshScreen();
 void editorOpen(char *filename);
 void editorSetStatusMessage(const char *fmt, ...);
+char *editorPrompt(char *prompt, void(*callback)(char*, int));
+void editorFindCallback(char *query, int key);
+void editorFind();
 void initEditor();
