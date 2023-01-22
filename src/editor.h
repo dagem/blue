@@ -63,6 +63,8 @@ void abFree(struct abuf *ab);
 void editorMoveCursor(int key);
 char *editorRowsToString(int *buffer_len);
 void editorSave();
+void editorFind();
+int editorRowRxToCx(erow *row, int rx);
 void editorProcessKeypress();
 void editorScroll();
 void editorDrawRows(struct abuf *ab);
