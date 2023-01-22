@@ -1,7 +1,6 @@
 #include "editor.h"
 
 static editorConfig E;
-
 void die(const char*s)
 {
 	write(STDIN_FILENO, "\x1b[2J", 4);
@@ -546,8 +545,7 @@ int editorRowRxToCx(erow *row, int rx)
 void editorProcessKeypress()
 {
 	int c = editorReadKey();
-	char* truth = malloc(sizeof(char) * 255);
-
+	static int quit_times = BLUE_QUIT_TIMES;
 	switch(c)
 	{
 		case '\r':
@@ -555,20 +553,16 @@ void editorProcessKeypress()
 			break;
 		case CTRL_KEY('q'):
 			
-			if(E.dirty)
+			if(E.dirty && quit_times > 0)
 			{
-				
-				truth = editorPrompt("WARNING!! file has unsaved changes. Press 'y' + enter to quit");
-				if(truth[0] == 'y' || truth[0] == 'Y')
-				{
-					write(STDOUT_FILENO, "\x1b[2J\x1b[H", 8);
-					exit(0);
-				}
+				editorSetStatusMessage("WARNING!! file has unsaved changes. Press CTRL+Q %d more time(s) to quit", quit_times);
+				quit_times--;
 				return;
 			}
-     		write(STDOUT_FILENO, "\x1b[2J\x1b[3J", 8);
+     		write(STDOUT_FILENO, "\x1b[2J\x1b[H", 8);
 			exit(0);	
-		break;
+			break;
+		case CTRL_KEY('D'):
 		case HOME_KEY:
 			E.cx = 0;
 			break;
@@ -579,7 +573,6 @@ void editorProcessKeypress()
 			}
 			break;
 		case BACKSPACE:
-		case CTRL_KEY('h'):
 		case DEL_KEY:
 			if(c == DEL_KEY)
 			{
@@ -624,10 +617,12 @@ void editorProcessKeypress()
 		case CTRL_KEY('\\'):
 			editorFind();
 			break;
+	
 		default: 
 			editorInsertChar(c);
 			break;
 	}
+	quit_times = BLUE_QUIT_TIMES;
 }
 void editorScroll()
 {
