@@ -726,10 +726,13 @@ void editorProcessKeypress()
 		case CTRL_KEY('\\'):
 			editorFind();
 			break;
+		
+		/*TO FIX
 		case CTRL_KEY('O'):
 			E.filename = editorPrompt("Enter a filename: ", NULL);
 			editorOpen(E.filename);
 			break;
+		*/
 		default: 
 			editorInsertChar(c);
 			break;
