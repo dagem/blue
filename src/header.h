@@ -23,5 +23,4 @@
 #define CTRL_KEY(k) ((k) & 0x1F) //  Ctrl(k) = 0B, k & 0x1f = b
 #define ABUF_INIT {NULL, 0}
 
-
 #endif /*__BLUE_HEADER_H__*/

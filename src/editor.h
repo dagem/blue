@@ -2,6 +2,7 @@
 #define __BLUE_EDITOR_H__
 #include "header.h"
 #define HL_HIGHLIGHT_NUMBERS (1<<0)
+#define HL_HIGHLIGHT_STRINGS (1<<1)
 #define HLDB_ENTRIES (sizeof(HLDB)/sizeof(HLDB[0]))
 
 enum editorKey 
