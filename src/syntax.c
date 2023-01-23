@@ -7,6 +7,7 @@ int editorSyntaxToColor(int hl)
     {
         case HL_INCLUDE:
             return 30;
+        case HL_MLCOMMENT:
         case HL_COMMENT:
             return 36;
         case HL_KEYWORD1:
