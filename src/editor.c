@@ -7,6 +7,7 @@ struct editorSyntax
 {
 	char *filetype;
 	char **filematch;
+	char *singleline_comment_start;
 	int flags;
 };
 
@@ -15,6 +16,7 @@ struct editorSyntax HLDB [] =
 	{
 		"c",
 		C_HL_extensions,
+		"//",
 		HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
 	},
 };
@@ -953,13 +955,25 @@ void editorUpdateSyntax(erow *row)
     {
         return;
     }
+	char *scs = E.syntax->singleline_comment_start;
+	int scs_len = scs ? strlen(scs) : 0;
+
     int prev_sep = 1;
 	int in_string = 0;
+
     int i = 0;
     while(i < row->rsize)
     {
         char c = row->render[i];
         unsigned char prev_hl = (i > 0) ? row->hl[i-1] : HL_NORMAL;
+		if(scs_len && !in_string)
+		{
+			if(!strncmp(&row->render[i], scs, scs_len))
+			{
+				memset(&row->hl[i], HL_COMMENT, row->rsize - i);
+				break;
+			}
+		}
         if(E.syntax->flags & HL_HIGHLIGHT_STRINGS)
 		{
 			if(in_string)
