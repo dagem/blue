@@ -1067,17 +1067,6 @@ void editorUpdateSyntax(erow *row)
         	    continue;
         	}
 		}
-		// if(E.syntax->include)
-		// {
-		// 	if((isdigit(c) && (prev_sep || prev_hl == HL_INCLUDE))
-        //  	||(c == '.' && prev_hl == HL_INCLUDE))
-        // 	{
-        //     	row->hl[i] = HL_INCLUDE;
-	    //         i++;
-    	//         prev_sep = 0;
-        // 	    continue;
-        // 	}
-		// }
 		if(prev_sep)
 		{
 			int j;
