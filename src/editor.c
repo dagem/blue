@@ -535,6 +535,11 @@ void editorSave()
 		}
 		editorSelectSyntaxHighlight();
 	}
+	char *cmp = ".tmp";
+	if(strstr(E.filename, cmp))
+	{
+		E.filename = strtok(E.filename, cmp);
+	}
 	
 	int length;
 	char *buf = editorRowsToString(&length);
@@ -550,6 +555,7 @@ void editorSave()
 				free(buf);
 				E.dirty = 0;
 				editorSetStatusMessage("File: '%s' was sucessfuly saved, %d bytes written to disk", E.filename, length);
+				remove(strcat(E.filename, cmp));
 				return;
 			}
 		}
@@ -937,7 +943,9 @@ void editorOpen(char *filename)
 	FILE *fp = fopen(filename, "r");
 	if(!fp)
 	{
-		die("fopen");
+		char *c = ".tmp";
+		fp = fopen(strcat(filename, c), "w+");
+		return;
 	}
 	char *line = NULL;
 	size_t linecap = 0;
