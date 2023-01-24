@@ -5,3 +5,7 @@ blue: src/main.c src/editor.c src/syntax.c
 
 clean:
 	rm -f blue
+install:
+	mv blue /usr/bin/blue
+remove: 
+	rm -rf /usr/bin/blue
