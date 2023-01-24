@@ -12,14 +12,12 @@ enum editorHighlight
 	HL_KEYWORD2,
 	HL_STRING,
 	HL_NUMBER,
-	HL_INCLUDE,
 	HL_MATCH
 };
 struct editorSyntax
 {
 	char *filetype;
 	char **filematch;
-	char **include;
 	char **keywords;
 	char *singleline_comment_start;
 	char *multiline_comment_start;

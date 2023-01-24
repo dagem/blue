@@ -11,7 +11,6 @@ char *C_HL_keywords [] =
 	"int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
 	"void|", NULL
 };
-char *C_HL_include [] = { "#include" };
 
 struct editorSyntax HLDB [] = 
 {
@@ -19,7 +18,6 @@ struct editorSyntax HLDB [] =
 		"c",
 		C_HL_extensions,
 		C_HL_keywords,
-		C_HL_include,
 		"//", "/*", "*/",
 		HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS
 	},
@@ -1069,17 +1067,17 @@ void editorUpdateSyntax(erow *row)
         	    continue;
         	}
 		}
-		if(E.syntax->include)
-		{
-			if((isdigit(c) && (prev_sep || prev_hl == HL_INCLUDE))
-         	||(c == '.' && prev_hl == HL_INCLUDE))
-        	{
-            	row->hl[i] = HL_INCLUDE;
-	            i++;
-    	        prev_sep = 0;
-        	    continue;
-        	}
-		}
+		// if(E.syntax->include)
+		// {
+		// 	if((isdigit(c) && (prev_sep || prev_hl == HL_INCLUDE))
+        //  	||(c == '.' && prev_hl == HL_INCLUDE))
+        // 	{
+        //     	row->hl[i] = HL_INCLUDE;
+	    //         i++;
+    	//         prev_sep = 0;
+        // 	    continue;
+        // 	}
+		// }
 		if(prev_sep)
 		{
 			int j;
