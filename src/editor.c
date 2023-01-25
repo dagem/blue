@@ -535,15 +535,17 @@ void editorSave()
 		}
 		editorSelectSyntaxHighlight();
 	}
-	char *cmp = ".tmp";
+	char *cmp = ".sav";
 	if(strstr(E.filename, cmp))
 	{
 		E.filename = strtok(E.filename, cmp);
+		editorSetStatusMessage("Save changed from .tmp to normal");
 	}
 	
 	int length;
 	char *buf = editorRowsToString(&length);
-
+	char *cmp2 = malloc(sizeof(char) *255);
+	strcpy(cmp2,cmp);
 	int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
 	if (fd != -1)
 	{
@@ -551,11 +553,12 @@ void editorSave()
 		{
 			if(write(fd, buf, length) == length)
 			{
+				strcpy(cmp,E.filename);
 				close(fd);
 				free(buf);
-				E.dirty = 0;
+				E.dirty = 0;	
 				editorSetStatusMessage("File: '%s' was sucessfuly saved, %d bytes written to disk", E.filename, length);
-				remove(strcat(E.filename, cmp));
+				editorOpen(cmp);
 				return;
 			}
 		}
@@ -563,6 +566,8 @@ void editorSave()
 	}
 	free(buf);
 	editorSetStatusMessage("Save failed! I/O error: %s", strerror(errno));
+	remove(strcat(E.filename, cmp2));
+	free(cmp2);
 }
 void editorFind()
 {
@@ -943,7 +948,7 @@ void editorOpen(char *filename)
 	FILE *fp = fopen(filename, "r");
 	if(!fp)
 	{
-		char *c = ".tmp";
+		char *c = ".sav";
 		fp = fopen(strcat(filename, c), "w+");
 		return;
 	}
@@ -1150,7 +1155,7 @@ void initEditor()
 	E.numrows = 0;
 	E.dirty = 0;
 	E.row = NULL;
-	E.filename = NULL;
+	E.filename = malloc(sizeof(char) * 255);
 	E.statusmsg[0] = '\0';
 	E.statusmsg_time = 0;
 	E.syntax = NULL;
